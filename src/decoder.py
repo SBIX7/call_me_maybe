@@ -1,7 +1,9 @@
+import json
+import re
+from typing import List
+
 from llm_sdk.llm_sdk import Small_LLM_Model
 from src.models import FunctionDef
-from typing import List
-import json
 
 
 class JSONConstrainedDecoder:
@@ -21,9 +23,9 @@ class JSONConstrainedDecoder:
                 word.startswith(clean_token) for word in allowed_words
             ):
                 valid_tokens_id.add(token_id)
-        for id in range(len(logits)):
-            if id not in valid_tokens_id:
-                logits[id] = float("-inf")
+        for idx in range(len(logits)):
+            if idx not in valid_tokens_id:
+                logits[idx] = float("-inf")
 
     def calculate_remainder(self, current_text: str, cible: str) -> str:
         rest_to_write = cible
@@ -43,42 +45,95 @@ class JSONConstrainedDecoder:
     def decode(self, prompt: str) -> str:
         i = 0
         generated_text = "{"
+        state_machine = "KEY_NAME_SEARCH"
+        cible = ['"name": "']
+        chosen_function = None
+        parametres_restants = []
+
         while True:
             full_text = prompt + generated_text
             ids_2d = self.llm.encode(full_text)
             ids_1d = ids_2d[0].tolist()
             logits = self.llm.get_logits_from_input_ids(ids_1d)
-            if '"name": "' not in generated_text:
-                targets = ['"name": "']
+
+            if state_machine == "KEY_NAME_SEARCH" and generated_text.endswith(
+                tuple(cible)
+            ):
+                state_machine = "VALUE_NAME_SEARCH"
+                cible = [f.name + '", "' for f in self.functions]
+
+            elif state_machine == "VALUE_NAME_SEARCH" and generated_text.endswith(
+                tuple(cible)
+            ):
+                state_machine = "KEY_PARAMETERS_SEARCH"
+                cible = ['parameters": {']
+
+            elif state_machine == "KEY_PARAMETERS_SEARCH" and generated_text.endswith(
+                tuple(cible)
+            ):
+                state_machine = "WRITE_PARAM_KEY"
+                match = re.search(r'"name": "(.*?)"', generated_text)
+                if match:
+                    func_name = match.group(1)
+                    for f in self.functions:
+                        if func_name == f.name:
+                            chosen_function = f
+                            break
+                    if chosen_function:
+                        parametres_restants = [
+                            f'"{key}": ' for key in chosen_function.parameters.keys()
+                        ]
+                        if parametres_restants:
+                            cible = [parametres_restants[0]]
+
+            if state_machine == "KEY_NAME_SEARCH":
+                targets = cible
                 permitted_words = self._get_remainder(generated_text, targets)
-                higher_score = max([score for _, score in permitted_words])
-                permitted_words = [
-                    word for word, score in permitted_words if score == higher_score
-                ]
+                if permitted_words:
+                    higher_score = max([score for _, score in permitted_words])
+                    permitted_words = [
+                        word for word, score in permitted_words if score == higher_score
+                    ]
                 self._apply_mask(logits, permitted_words)
-            elif '", "' not in generated_text:
-                targets = [elem.name + '", "' for elem in self.functions]
+
+            elif state_machine == "VALUE_NAME_SEARCH":
+                targets = cible
                 permitted_words = self._get_remainder(generated_text, targets)
-                higher_score = max([score for _, score in permitted_words])
-                permitted_words = [
-                    word for word, score in permitted_words if score == higher_score
-                ]
+                if permitted_words:
+                    higher_score = max([score for _, score in permitted_words])
+                    permitted_words = [
+                        word for word, score in permitted_words if score == higher_score
+                    ]
                 self._apply_mask(logits, permitted_words)
-            elif '"arguments": {' not in generated_text:
-                targets = ['arguments": {']
+
+            elif state_machine == "KEY_PARAMETERS_SEARCH":
+                targets = cible
                 permitted_words = self._get_remainder(generated_text, targets)
-                higher_score = max([score for _, score in permitted_words])
-                permitted_words = [
-                    word for word, score in permitted_words if score == higher_score
-                ]
+                if permitted_words:
+                    higher_score = max([score for _, score in permitted_words])
+                    permitted_words = [
+                        word for word, score in permitted_words if score == higher_score
+                    ]
                 self._apply_mask(logits, permitted_words)
+
+            elif state_machine == "WRITE_PARAM_KEY":
+                targets = cible
+                permitted_words = self._get_remainder(generated_text, targets)
+                if permitted_words:
+                    higher_score = max([score for _, score in permitted_words])
+                    permitted_words = [
+                        word for word, score in permitted_words if score == higher_score
+                    ]
+                self._apply_mask(logits, permitted_words)
+
             best_token_id = logits.index(max(logits))
             best_token_str = self.llm.decode([best_token_id])
             generated_text += best_token_str
-            print(f"Tour {i} : {generated_text}")
-            print(f"Reste autorisé : {permitted_words}")
-            print(f"Token choisi par l'IA : '{best_token_str}' (ID: {best_token_id})")
+
+            print(f"Tour {i} | Etat: {state_machine} | Texte : {generated_text}")
+
             if i == 200:
                 break
             i += 1
+
         return generated_text
