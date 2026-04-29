@@ -86,45 +86,14 @@ class JSONConstrainedDecoder:
                         if parametres_restants:
                             cible = [parametres_restants[0]]
 
-            if state_machine == "KEY_NAME_SEARCH":
-                targets = cible
-                permitted_words = self._get_remainder(generated_text, targets)
-                if permitted_words:
-                    higher_score = max([score for _, score in permitted_words])
-                    permitted_words = [
-                        word for word, score in permitted_words if score == higher_score
-                    ]
-                self._apply_mask(logits, permitted_words)
-
-            elif state_machine == "VALUE_NAME_SEARCH":
-                targets = cible
-                permitted_words = self._get_remainder(generated_text, targets)
-                if permitted_words:
-                    higher_score = max([score for _, score in permitted_words])
-                    permitted_words = [
-                        word for word, score in permitted_words if score == higher_score
-                    ]
-                self._apply_mask(logits, permitted_words)
-
-            elif state_machine == "KEY_PARAMETERS_SEARCH":
-                targets = cible
-                permitted_words = self._get_remainder(generated_text, targets)
-                if permitted_words:
-                    higher_score = max([score for _, score in permitted_words])
-                    permitted_words = [
-                        word for word, score in permitted_words if score == higher_score
-                    ]
-                self._apply_mask(logits, permitted_words)
-
-            elif state_machine == "WRITE_PARAM_KEY":
-                targets = cible
-                permitted_words = self._get_remainder(generated_text, targets)
-                if permitted_words:
-                    higher_score = max([score for _, score in permitted_words])
-                    permitted_words = [
-                        word for word, score in permitted_words if score == higher_score
-                    ]
-                self._apply_mask(logits, permitted_words)
+            targets = cible
+            permitted_words = self._get_remainder(generated_text, targets)
+            if permitted_words:
+                higher_score = max([score for _, score in permitted_words])
+                permitted_words = [
+                    word for word, score in permitted_words if score == higher_score
+                ]
+            self._apply_mask(logits, permitted_words)
 
             best_token_id = logits.index(max(logits))
             best_token_str = self.llm.decode([best_token_id])
