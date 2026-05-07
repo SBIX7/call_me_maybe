@@ -29,7 +29,7 @@ def main():
     prompts = load_prompt(args.input)
     llm = Small_LLM_Model()
     decoder = JSONConstrainedDecoder(llm, functions)
-    print(decoder.decode(prompts[0].model_dump()['prompt']))
+    print(decoder.decode(prompts[2].model_dump()['prompt']))
 
 
 if __name__ == "__main__":
