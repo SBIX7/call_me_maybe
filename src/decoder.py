@@ -156,7 +156,7 @@ class JSONConstrainedDecoder:
                     chosen_function
                     and chosen_function.parameters[current_key].type == "number"
                 ):
-                    self._apply_number_mask(logits, len(parametres_restants) )
+                    self._apply_number_mask(logits, len(parametres_restants))
 
             else:
                 # Pour tous les autres états, on force la 'cible' exacte
