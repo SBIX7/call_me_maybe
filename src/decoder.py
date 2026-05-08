@@ -27,6 +27,18 @@ class JSONConstrainedDecoder:
             if idx not in valid_tokens_id:
                 logits[idx] = float("-inf")
 
+    def _apply_number_mask(self, logits: List[float]):
+        alwd = {"1", "2", "3", "4", "5", "6", "7", "8", "9"}
+        alwd.add(".", "0", ",", "}", "-")
+        valid_tokens_id = set()
+        for token_str, token_id in self.vocab.items():
+            clean_token = token_str.replace("Ġ", "")
+            if clean_token in alwd:
+                valid_tokens_id.add(token_id)
+        for idx in range(len(logits)):
+            if idx not in valid_tokens_id:
+                logits[idx] = float("-inf")
+
     def calculate_remainder(self, current_text: str, cible: str) -> tuple:
         rest_to_write = cible
         max_size = len(cible)
@@ -63,14 +75,14 @@ class JSONConstrainedDecoder:
                 state_machine = "STATE_WRITE_FUNC_NAME"
                 cible = [f.name + '", "' for f in self.functions]
 
-            elif (
+            if (
                 state_machine == "STATE_WRITE_FUNC_NAME"
                 and generated_text.endswith(tuple(cible))
             ):
                 state_machine = "STATE_WRITE_PARAMS_KEY"
                 cible = ['parameters": {']
 
-            elif (
+            if (
                 state_machine == "STATE_WRITE_PARAMS_KEY"
                 and generated_text.endswith(tuple(cible))
             ):
@@ -89,46 +101,49 @@ class JSONConstrainedDecoder:
                         if parametres_restants:
                             cible = [parametres_restants[0]]
 
-            elif (
+            if (
                 state_machine == "STATE_WRITE_ARG_KEY"
                 and generated_text.endswith(tuple(cible))
             ):
                 state_machine = "STATE_WRITE_ARG_VALUE"
                 if chosen_function:
-                    if chosen_function.parameters.get(cible[0]) == "number":
-                        alwd = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-                        alwd += [".", "0", ",", "}", "-"]
-                        self._apply_mask(logits, alwd)
+                    key = cible[0].strip(': ').strip('"')
+                    # print(chosen_function.parameters[key]["type"])
+                    if chosen_function.parameters.key.type == "number":
+                        targets = cible
+                        permitted_words = self._get_remainder(generated_text, targets)
+
+                        if permitted_words:
+                            higher_score = max([score for _, score in permitted_words])
+                            permitted_words = [
+                                word
+                                for word, score in permitted_words
+                                if score == higher_score
+                            ]
+
+                        self._apply_mask(logits, permitted_words)
+
                         best_token_id = logits.index(max(logits))
                         best_token_str = self.llm.decode([best_token_id])
                         generated_text += best_token_str
-
-                        print(f"Tour {i} | Etat: {state_machine} | Texte : {generated_text}")
-
-                        if i == 200:
-                            break
-                        i += 1
-
-
-                        continue
                 
+            else:
+                targets = cible
+                permitted_words = self._get_remainder(generated_text, targets)
 
-            targets = cible
-            permitted_words = self._get_remainder(generated_text, targets)
+                if permitted_words:
+                    higher_score = max([score for _, score in permitted_words])
+                    permitted_words = [
+                        word
+                        for word, score in permitted_words
+                        if score == higher_score
+                    ]
 
-            if permitted_words:
-                higher_score = max([score for _, score in permitted_words])
-                permitted_words = [
-                    word
-                    for word, score in permitted_words
-                    if score == higher_score
-                ]
+                self._apply_mask(logits, permitted_words)
 
-            self._apply_mask(logits, permitted_words)
-
-            best_token_id = logits.index(max(logits))
-            best_token_str = self.llm.decode([best_token_id])
-            generated_text += best_token_str
+                best_token_id = logits.index(max(logits))
+                best_token_str = self.llm.decode([best_token_id])
+                generated_text += best_token_str
 
             print(f"Tour {i} | Etat: {state_machine} | Texte : {generated_text}")
 
