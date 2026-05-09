@@ -48,7 +48,7 @@ class JSONConstrainedDecoder:
         for token_str, token_id in self.vocab.items():
             clean_token = token_str.replace("Ġ", "")
             # Verify if the cleaned token is in the allowed characters list
-            if clean_token in alwd:
+            if all(char in alwd for char in clean_token):
                 valid_tokens_id.add(token_id)
 
         # Apply the mask
@@ -73,19 +73,32 @@ class JSONConstrainedDecoder:
             potential_remainders.append((remainder, score))
         return potential_remainders
 
+    def _system_prompt(self, prompt: str) -> str:
+        prompt += ". functions disposale: "
+        for function in self.functions:
+            prompt += function.name
+            prompt += " description: "
+            prompt += function.description
+            prompt += "."
+        return prompt
+
     def decode(self, prompt: str) -> str:
         """Main decoding loop enforcing the JSON structure step by step."""
         i = 0
-        generated_text = "{"
+        generated_text = ""
         state_machine = "STATE_WRITE_NAME_KEY"
         cible = ['"name": "']
         chosen_function = None
         parametres_restants = []
         current_key = None
-
+        # prompt = self._system_prompt(prompt)
+        # print(prompt)
+        print(prompt)
+        print(self.functions)
         while True:
             # 1. Prepare input and get logits
-            full_text = prompt + generated_text
+            full_text = "{" + '"prompt": "' + prompt + '", ' + generated_text
+            print(full_text)
             ids_2d = self.llm.encode(full_text)
             ids_1d = ids_2d[0].tolist()
             logits = self.llm.get_logits_from_input_ids(ids_1d)
@@ -175,7 +188,7 @@ class JSONConstrainedDecoder:
             generated_text += best_token_str
 
             # Log current status
-            print(f"Tour {i} | Etat: {state_machine} | Texte : {generated_text}")
+            # print(f"Tour {i} | Etat: {state_machine} | Texte : {generated_text}")
 
             # Safety break
             if i == 200:
