@@ -23,7 +23,7 @@ class MaskManager:
     def apply_number_mask(self, logits: List[float], len_param: int):
         """Specialized mask to only allow numeric characters and JSON structure symbols."""
         alwd = {"1", "2", "3", "4", "5", "6", "7", "8", "9"}
-        alwd = alwd | {".", "0", ",", "}", "-", " -"}
+        alwd = alwd | {".", "0", ",", "}", "-", " ", "+", "−"}
 
         if len_param == 0:
             alwd.remove(",")

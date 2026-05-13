@@ -25,11 +25,26 @@ class JSONConstrainedDecoder:
         """Main decoding loop enforcing the JSON structure step by step."""
 
         # 1. Prepare the System Prompt (Context & Instructions for the LLM)
-        system_prompt = "You are a helpful AI assistant. Extract the correct function call.\nAvailable functions:\n"
-        system_prompt += "CRITICAL: Convert written negative numbers like 'negative 2' into mathematical symbols like '-2'.\n"
+        system_prompt = (
+            "<|im_start|>system\n"
+            "You are a precise data extraction AI. "
+            "CRITICAL: You MUST preserve negative signs. If the prompt says '-2', you output -2.<|im_end|>\n"
+            "<|im_start|>user\n"
+            "Available functions:\n"
+        )
+
         for function in self.functions:
             system_prompt += f"- {function.name}: {function.description}\n"
-        system_prompt += f"\nUser: {prompt}\nAssistant:\n"
+
+        system_prompt += (
+            "\n--- EXAMPLE ---\n"
+            "Prompt: What is the addition of -5 and 4?\n"
+            'Output: {"prompt": "What is the addition of -5 and 4?", "name": "fn_add_numbers", "parameters": {"a": -5, "b": 4}}\n'
+            "---------------\n"
+        )
+
+        # On ferme la balise user et on ouvre la balise assistant pour forcer l'IA à répondre !
+        system_prompt += f"\nPrompt: {prompt}<|im_end|>\n<|im_start|>assistant\n"
 
         # 2. Initialize State Machine Variables
         i = 0
@@ -83,7 +98,7 @@ class JSONConstrainedDecoder:
 
                     if chosen_function:
                         parametres_restants = [
-                            f'"{key}": ' for key in chosen_function.parameters.keys()
+                            f'"{key}":' for key in chosen_function.parameters.keys()
                         ]
                         if parametres_restants:
                             cible = [parametres_restants[0]]
