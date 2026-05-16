@@ -1,7 +1,0 @@
-[
-    {
-        "prompt": "Just ping the system to see if it's awake.",
-        "name": "fn_system_ping",
-        "parameters": {}
-    }
-]
