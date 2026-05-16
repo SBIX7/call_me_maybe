@@ -7,7 +7,7 @@ from llm_sdk.llm_sdk import Small_LLM_Model
 from src.decoder import JSONConstrainedDecoder
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="arguments")
     parser.add_argument(
         "--functions_definition",
@@ -28,7 +28,7 @@ def main():
         help="Path to where final JSON will be saved",
     )
     args = parser.parse_args()
-    
+
     try:
         functions = load_functions_definitions(args.functions_definition)
         prompts = load_prompt(args.input)
@@ -46,25 +46,36 @@ def main():
     directory = os.path.dirname(args.output)
     if directory:
         os.makedirs(directory, exist_ok=True)
-    
+
     results = []
-    
-    # --- CORRECTION: Gestion propre de Ctrl+C et Ctrl+D ---
+
     try:
         for i in range(len(prompts)):
             try:
-                raw_output = decoder.decode(prompts[i].model_dump()['prompt'])
-                sanitized_output = raw_output.replace("\\", "\\\\").replace('\\\\"', '\\"')
-                parsed_json = json.loads(sanitized_output)
+                p_str = prompts[i].model_dump()['prompt']
+                raw_output = decoder.decode(p_str)
+                s_out = raw_output.replace("\\", "\\\\")
+                s_out = raw_output.replace('\\\\"', '\\"')
+                parsed_json = json.loads(s_out)
                 results.append(parsed_json)
             except json.JSONDecodeError as e:
-                print(f"\nWarning: LLM generated invalid JSON for prompt: {prompts[i].prompt}\nError: {e}", file=sys.stderr)
+                print(
+                    f"\nWarning: LLM generated invalid JSON for prompt: "
+                    f"{prompts[i].prompt}\nError: {e}",
+                    file=sys.stderr
+                )
                 continue
             except Exception as e:
-                print(f"\nUnexpected error decoding prompt {i}: {e}", file=sys.stderr)
+                print(
+                    f"\nUnexpected error decoding prompt {i}: {e}",
+                    file=sys.stderr
+                )
                 continue
     except (KeyboardInterrupt, EOFError):
-        print("\n\nExecution interrupted by user (Ctrl+C/Ctrl+D). Saving progress...", file=sys.stderr)
+        print(
+            "\n\nExecution interrupted (Ctrl+C/Ctrl+D). Saving progress...",
+            file=sys.stderr
+        )
 
     try:
         with open(args.output, "w", encoding="utf-8") as f:

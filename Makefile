@@ -14,8 +14,8 @@ clean:
 
 lint:
 	uv run flake8 src
-	uv run mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src
+	uv run mypy --no-sqlite-cache --follow-imports=silent --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src
 
 lint-strict:
 	uv run flake8 src
-	uv run mypy --strict src
+	uv run mypy --no-sqlite-cache --follow-imports=silent --strict src

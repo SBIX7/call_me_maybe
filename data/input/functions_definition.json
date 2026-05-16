@@ -1,86 +1,87 @@
 [
   {
-    "name": "fn_add_numbers",
-    "description": "Add two numbers together and return their sum.",
-    "parameters": {
-      "a": {
-        "type": "number"
-      },
-      "b": {
-        "type": "number"
-      }
-    },
-    "returns": {
-      "type": "number"
-    }
-  },
-  {
-    "name": "fn_greet",
-    "description": "Generate a greeting message for a person by name.",
-    "parameters": {
-      "name": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  },
-  {
-    "name": "fn_reverse_string",
-    "description": "Reverse a string and return the reversed result.",
-    "parameters": {
-      "s": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  },
-  {
-    "name": "fn_get_square_root",
-    "description": "Calculate the square root of a number.",
-    "parameters": {
-      "a": {
-        "type": "number"
-      }
-    },
-    "returns": {
-      "type": "number"
-    }
-  },
-  {
-    "name": "fn_substitute_string_with_regex",
-    "description": "Replace all occurrences matching a regex pattern in a string.",
-    "parameters": {
-      "source_string": {
-        "type": "string"
-      },
-      "regex": {
-        "type": "string"
-      },
-      "replacement": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  },
-  {
-    "name": "fn_is_grater",
-    "description": "cheks if a is garter than b and return True otherwise False.",
-    "parameters":{
-      "a":{
-        "type": "number"
-      },
-      "b":{
-        "type": "number"
-      }
-    },
+    "name": "fn_system_ping",
+    "description": "Ping the system to check if it is alive. Requires absolutely no parameters.",
+    "parameters": {},
     "returns": {
       "type": "boolean"
+    }
+  },
+  {
+    "name": "fn_calculate_trajectory",
+    "description": "Calculate trajectory given initial velocity and angle. Can handle negative values and floats.",
+    "parameters": {
+      "velocity": {
+        "type": "number"
+      },
+      "angle": {
+        "type": "number"
+      }
+    },
+    "returns": {
+      "type": "number"
+    }
+  },
+  {
+    "name": "fn_user_profile",
+    "description": "Update user profile with age, bio, subscription status, and role.",
+    "parameters": {
+      "age": {
+        "type": "number"
+      },
+      "bio": {
+        "type": "string"
+      },
+      "is_premium": {
+        "type": "boolean"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "admin",
+          "user",
+          "guest"
+        ]
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
+    "name": "fn_regex_extractor",
+    "description": "Extract data from a text using a regex pattern.",
+    "parameters": {
+      "text": {
+        "type": "string"
+      },
+      "pattern": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
+    "name": "fn_smart_home_control",
+    "description": "Control a smart home device state.",
+    "parameters": {
+      "device": {
+        "type": "string",
+        "enum": [
+          "lights",
+          "thermostat",
+          "blinds",
+          "lock"
+        ]
+      },
+      "state": {
+        "type": "boolean"
+      }
+    },
+    "returns": {
+      "type": "string"
     }
   }
 ]

@@ -1,10 +1,157 @@
 [
     {
-        "prompt": "is 3 grater than 2",
-        "name": "fn_is_grater",
+        "prompt": "Just ping the system to see if it's awake.",
+        "name": "fn_system_ping",
+        "parameters": {}
+    },
+    {
+        "prompt": "Is the server alive? Send a ping.",
+        "name": "fn_system_ping",
+        "parameters": {}
+    },
+    {
+        "prompt": "Calculate the trajectory for a velocity of -15.5 and an angle of -45.2 degrees.",
+        "name": "fn_calculate_trajectory",
         "parameters": {
-            "a": 3,
-            "b": 2
+            "velocity": -15.5,
+            "angle": -45.2
+        }
+    },
+    {
+        "prompt": "Find the trajectory if velocity is 0 and angle is 3.14159.",
+        "name": "fn_calculate_trajectory",
+        "parameters": {
+            "velocity": 0,
+            "angle": 3.14159
+        }
+    },
+    {
+        "prompt": "Calculate trajectory with velocity 999999999 and angle -0.0001.",
+        "name": "fn_calculate_trajectory",
+        "parameters": {
+            "velocity": 999999999,
+            "angle": -0.0001
+        }
+    },
+    {
+        "prompt": "Turn on the smart home lights.",
+        "name": "fn_smart_home_control",
+        "parameters": {
+            "device": "lights",
+            "state": true
+        }
+    },
+    {
+        "prompt": "Make sure the smart home lock is turned to false.",
+        "name": "fn_smart_home_control",
+        "parameters": {
+            "device": "lock",
+            "state": false
+        }
+    },
+    {
+        "prompt": "Set the smart home thermostat to true.",
+        "name": "fn_smart_home_control",
+        "parameters": {
+            "device": "thermostat",
+            "state": true
+        }
+    },
+    {
+        "prompt": "Update profile: 25 years old, admin role, premium is true, bio is 'Hello world'.",
+        "name": "fn_user_profile",
+        "parameters": {
+            "age": 25,
+            "bio": "Hello world",
+            "is_premium": true,
+            "role": "admin"
+        }
+    },
+    {
+        "prompt": "Change my role to superadmin, I am 40, not premium, bio 'test'. (Note: superadmin is invalid, model MUST force 'admin', 'user' or 'guest').",
+        "name": "fn_user_profile",
+        "parameters": {
+            "age": 40,
+            "bio": "test",
+            "is_premium": false,
+            "role": "admin"
+        }
+    },
+    {
+        "prompt": "Set age to -5, bio to '[]', premium to false, and role to guest.",
+        "name": "fn_user_profile",
+        "parameters": {
+            "age": -5,
+            "bio": "[]",
+            "is_premium": false,
+            "role": "guest"
+        }
+    },
+    {
+        "prompt": "Update bio to 'He said \"I love coding\"' and age to 30, premium false, role user.",
+        "name": "fn_user_profile",
+        "parameters": {
+            "age": 30,
+            "bio": "He said \"I love coding\"",
+            "is_premium": false,
+            "role": "user"
+        }
+    },
+    {
+        "prompt": "Update bio to '@#$!%^&*()_+{}|:<>?~' for a 10 year old user, premium true, role user.",
+        "name": "fn_user_profile",
+        "parameters": {
+            "age": 10,
+            "bio": "@#$!%^&*()_+{}|:<>?~",
+            "is_premium": true,
+            "role": "user"
+        }
+    },
+    {
+        "prompt": "Extract digits from 'User 123' using the regex \\d+",
+        "name": "fn_regex_extractor",
+        "parameters": {
+            "text": "User 123",
+            "pattern": "\\d+"
+        }
+    },
+    {
+        "prompt": "Extract from an empty string '' using pattern '.*'",
+        "name": "fn_regex_extractor",
+        "parameters": {
+            "text": "''",
+            "pattern": ".*"
+        }
+    },
+    {
+        "prompt": "The smart home blinds should be set to true.",
+        "name": "fn_smart_home_control",
+        "parameters": {
+            "device": "blinds",
+            "state": true
+        }
+    },
+    {
+        "prompt": "Hey, can you ping the server right now?",
+        "name": "fn_system_ping",
+        "parameters": {}
+    },
+    {
+        "prompt": "Trajectory for velocity -273.15 and angle 360.",
+        "name": "fn_calculate_trajectory",
+        "parameters": {
+            "velocity": -273.15,
+            "angle": 360
+        }
+    },
+    {
+        "prompt": "Update profile: I am 0 years old, bio is '   ', premium is false, role is guest.",
+        "name": "fn_user_profile",
+        "parameters": {
+            "age": 0,
+            "bio": "   ",
+            "is_premium": false,
+            "role": "guest"
         }
     }
 ]

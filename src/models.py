@@ -1,9 +1,10 @@
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, List, Optional
 
 
 class TypeDef(BaseModel):
     type: str
+    enum: Optional[List[str]] = None
 
 
 class FunctionDef(BaseModel):
