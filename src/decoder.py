@@ -71,8 +71,10 @@ class JSONConstrainedDecoder:
         prompt = (
             "<|im_start|>system\n"
             "You are a precise data extraction AI. "
-            "CRITICAL: You MUST preserve negative signs. "
-            "If prompt says '-2', output -2.<|im_end|>\n"
+            "CRITICAL: You MUST output all numbers as floats. "
+            "(e.g., 2.0 instead of 2). "
+            "You MUST preserve negative signs. "
+            "If prompt says '-2', output -2.0.<|im_end|>\n"
             "<|im_start|>user\n"
             "Available functions:\n"
         )
@@ -82,7 +84,7 @@ class JSONConstrainedDecoder:
             "\n--- EXAMPLE ---\n"
             "Prompt: What is the addition of -5 and 4?\n"
             'Output: {"prompt": "What is the addition of -5 and 4?", '
-            '"name": "fn_add_numbers", "parameters": {"a": -5, "b": 4}}\n'
+            '"name": "fn_add_numbers", "parameters": {"a": -5.0, "b": 4.0}}\n'
             "---------------\n"
         )
         return prompt
