@@ -2,9 +2,18 @@ import argparse
 import json
 import os
 import sys
-from src.parser import load_functions_definitions, load_prompt
-from llm_sdk.llm_sdk import Small_LLM_Model
-from src.decoder import JSONConstrainedDecoder
+try:
+    from src.parser import load_functions_definitions, load_prompt
+    from llm_sdk.llm_sdk import Small_LLM_Model
+    from src.decoder import JSONConstrainedDecoder
+except ImportError as e:
+    print(
+        f"Fatal error: Missing or corrupted module.\n"
+        f"Ensure 'llm_sdk' directory is present in the root of the project.\n"
+        f"Details: {e}",
+        file=sys.stderr
+    )
+    sys.exit(1)
 
 
 def main() -> None:
