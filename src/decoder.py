@@ -10,11 +10,9 @@ from src.masks import MaskManager
 
 class JSONConstrainedDecoder:
     def __init__(self, llm: Small_LLM_Model, functions: List[FunctionDef]):
-        """Initialize the decoder with the LLM and the allowed functions."""
         self.llm = llm
         self.functions = functions
 
-        # Load vocabulary from the model and initialize the MaskManager
         vocab_path = llm.get_path_to_vocab_file()
         with open(vocab_path, "r", encoding="utf-8") as f:
             vocab = json.load(f)
@@ -22,9 +20,6 @@ class JSONConstrainedDecoder:
         self.masker = MaskManager(vocab)
 
     def decode(self, prompt: str) -> str:
-        """Main decoding loop enforcing the JSON structure step by step."""
-
-        # 1. Prepare the System Prompt (Context & Instructions for the LLM)
         system_prompt = (
             "<|im_start|>system\n"
             "You are a precise data extraction AI. "
@@ -43,14 +38,12 @@ class JSONConstrainedDecoder:
             "---------------\n"
         )
 
-        # On ferme la balise user et on ouvre la balise assistant pour forcer l'IA à répondre !
         system_prompt += f"\nPrompt: {prompt}<|im_end|>\n<|im_start|>assistant\n"
 
-        # 2. Initialize State Machine Variables
         i = 0
-
-        # json.dumps(prompt) is CRITICAL here to escape internal quotes properly!
         generated_text = '{"prompt": ' + json.dumps(prompt) + ", "
+
+        print(generated_text, end="", flush=True)
 
         state_machine = "STATE_WRITE_NAME_KEY"
         cible = ['"name": "']
@@ -60,16 +53,10 @@ class JSONConstrainedDecoder:
         string_start_len = 0
 
         while True:
-            # 3. Prepare input and get logits
             full_text = system_prompt + generated_text
-
             ids_2d = self.llm.encode(full_text)
             ids_1d = ids_2d[0].tolist()
             logits = self.llm.get_logits_from_input_ids(ids_1d)
-
-            # ---------------------------------------------------------
-            # 4. STATE MACHINE TRANSITIONS (The Brain)
-            # ---------------------------------------------------------
 
             if state_machine == "STATE_WRITE_NAME_KEY" and generated_text.endswith(
                 tuple(cible)
@@ -87,7 +74,6 @@ class JSONConstrainedDecoder:
                 tuple(cible)
             ):
                 state_machine = "STATE_WRITE_ARG_KEY"
-
                 match = re.search(r'"name": "(.*?)"', generated_text)
                 if match:
                     func_name = match.group(1)
@@ -102,6 +88,9 @@ class JSONConstrainedDecoder:
                         ]
                         if parametres_restants:
                             cible = [parametres_restants[0]]
+                        else:
+                            state_machine = "STATE_END_JSON"
+                            cible = ["}}"]
 
             if state_machine == "STATE_WRITE_ARG_KEY" and generated_text.endswith(
                 tuple(cible)
@@ -115,10 +104,14 @@ class JSONConstrainedDecoder:
                 ):
                     state_machine = "STATE_WRITE_STRING_START"
                     cible = ['"']
+                elif (
+                    chosen_function
+                    and chosen_function.parameters[current_key].type == "boolean"
+                ):
+                    state_machine = "STATE_WRITE_BOOLEAN_VALUE"
+                    cible = ["true", "false", " true", " false"]
                 else:
                     state_machine = "STATE_WRITE_ARG_VALUE"
-
-            # --- STRING HANDLING STATES ---
 
             if state_machine == "STATE_WRITE_STRING_START" and generated_text.endswith(
                 '"'
@@ -128,17 +121,10 @@ class JSONConstrainedDecoder:
 
             if state_machine == "STATE_WRITE_STRING_CONTENT":
                 new_content = generated_text[string_start_len:]
-
-                # MAGIC REGEX: Finds a quote that is NOT preceded by a backslash
-                # This ignores escaped quotes inside the string (like \")
                 match = re.search(r'(?<!\\)"', new_content)
-
                 if match:
-                    # Truncate at the exact position of the real closing quote
                     quote_pos = string_start_len + match.start()
                     generated_text = generated_text[: quote_pos + 1]
-
-                    # Take back control of the state machine
                     if parametres_restants:
                         state_machine = "STATE_WRITE_ARG_KEY"
                         cible = [", " + parametres_restants[0]]
@@ -146,7 +132,15 @@ class JSONConstrainedDecoder:
                         state_machine = "STATE_END_JSON"
                         cible = ["}}"]
 
-            # --- NUMBER HANDLING STATE ---
+            if state_machine == "STATE_WRITE_BOOLEAN_VALUE" and (
+                generated_text.endswith("true") or generated_text.endswith("false")
+            ):
+                if parametres_restants:
+                    state_machine = "STATE_WRITE_ARG_KEY"
+                    cible = [", " + parametres_restants[0]]
+                else:
+                    state_machine = "STATE_END_JSON"
+                    cible = ["}}"]
 
             if state_machine == "STATE_WRITE_ARG_VALUE" and (
                 generated_text.endswith(",") or generated_text.endswith("}")
@@ -158,13 +152,8 @@ class JSONConstrainedDecoder:
                     state_machine = "STATE_END_JSON"
                     cible = ["}}"]
 
-            # --- VICTORY CONDITION ---
             if state_machine == "STATE_END_JSON" and generated_text.endswith("}}"):
                 break
-
-            # ---------------------------------------------------------
-            # 5. EXECUTION: APPLYING MASKS
-            # ---------------------------------------------------------
 
             if state_machine == "STATE_WRITE_ARG_VALUE":
                 if (
@@ -172,14 +161,11 @@ class JSONConstrainedDecoder:
                     and chosen_function.parameters[current_key].type == "number"
                 ):
                     self.masker.apply_number_mask(logits, len(parametres_restants))
-
             elif state_machine == "STATE_WRITE_STRING_CONTENT":
                 self.masker.apply_string_mask(logits)
-
             else:
                 targets = cible
                 permitted_words = get_remainder(generated_text, targets)
-
                 if permitted_words:
                     higher_score = max([score for _, score in permitted_words])
                     permitted_words = [
@@ -190,10 +176,12 @@ class JSONConstrainedDecoder:
             best_token_id = logits.index(max(logits))
             best_token_str = self.llm.decode([best_token_id])
             generated_text += best_token_str
-            print(generated_text)
-            # Increased to 400 because Regex generation can take many tokens
+
+            print(best_token_str, end="", flush=True)
+
             if i == 400:
                 break
             i += 1
 
+        print()
         return generated_text

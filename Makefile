@@ -1,3 +1,5 @@
+.PHONY: install run debug clean lint lint-strict
+
 install:
 	uv sync
 
@@ -11,9 +13,9 @@ clean:
 	rm -rf .venv __pycache__ src/__pycache__ llm_sdk/__pycache__ .mypy_cache
 
 lint:
-	flake8 src
-	mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src
+	uv run flake8 src
+	uv run mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs src
 
 lint-strict:
-	flake8 src
-	mypy --strict src
+	uv run flake8 src
+	uv run mypy --strict src

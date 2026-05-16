@@ -67,5 +67,20 @@
     "returns": {
       "type": "string"
     }
+  },
+  {
+    "name": "fn_is_grater",
+    "description": "cheks if a is garter than b and return True otherwise False.",
+    "parameters":{
+      "a":{
+        "type": "number"
+      },
+      "b":{
+        "type": "number"
+      }
+    },
+    "returns": {
+      "type": "boolean"
+    }
   }
 ]
