@@ -1,62 +1,35 @@
 [
   {
-    "prompt": "Just ping the system to see if it's awake."
+    "prompt": "What is the sum of -2?"
   },
   {
-    "prompt": "Is the server alive? Send a ping."
+    "prompt": "What is the sum of 265 and 345?"
   },
   {
-    "prompt": "Calculate the trajectory for a velocity of -15.5 and an angle of -45.2 degrees."
+    "prompt": "Greet shrek"
   },
   {
-    "prompt": "Find the trajectory if velocity is 0 and angle is 3.14159."
+    "prompt": "Greet john"
   },
   {
-    "prompt": "Calculate trajectory with velocity 999999999 and angle -0.0001."
+    "prompt": "Reverse the string 'hello'"
   },
   {
-    "prompt": "Turn on the smart home lights."
+    "prompt": "Reverse the string 'world'"
   },
   {
-    "prompt": "Make sure the smart home lock is turned to false."
+    "prompt": "What is the square root of 16?"
   },
   {
-    "prompt": "Set the smart home thermostat to true."
+    "prompt": "Calculate the square root of 144"
   },
   {
-    "prompt": "Update profile: 25 years old, admin role, premium is true, bio is 'Hello world'."
+    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
   },
   {
-    "prompt": "Change my role to superadmin, I am 40, not premium, bio 'test'. (Note: superadmin is invalid, model MUST force 'admin', 'user' or 'guest')."
+    "prompt": "Replace all vowels in 'Programming is fun' with asterisks"
   },
   {
-    "prompt": "Set age to -5, bio to '[]', premium to false, and role to guest."
-  },
-  {
-    "prompt": "Update bio to 'He said \"I love coding\"' and age to 30, premium false, role user."
-  },
-  {
-    "prompt": "Update bio to '@#$!%^&*()_+{}|:<>?~' for a 10 year old user, premium true, role user."
-  },
-  {
-    "prompt": "Extract digits from 'User 123' using the regex \\d+"
-  },
-  {
-    "prompt": "Extract from an empty string '' using pattern '.*'"
-  },
-  {
-    "prompt": "Match email addresses using pattern ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$ in text 'test@test.com'"
-  },
-  {
-    "prompt": "The smart home blinds should be set to true."
-  },
-  {
-    "prompt": "Hey, can you ping the server right now?"
-  },
-  {
-    "prompt": "Trajectory for velocity -273.15 and angle 360."
-  },
-  {
-    "prompt": "Update profile: I am 0 years old, bio is '   ', premium is false, role is guest."
+    "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'"
   }
 ]

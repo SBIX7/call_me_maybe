@@ -1,7 +1,13 @@
+"""
+Entry point for the Function Calling pipeline.
+Handles argument parsing, setup, and execution of the constrained decoder.
+"""
+
 import argparse
 import json
 import os
 import sys
+
 try:
     from src.parser import load_functions_definitions, load_prompt
     from llm_sdk.llm_sdk import Small_LLM_Model
@@ -17,6 +23,9 @@ except ImportError as e:
 
 
 def main() -> None:
+    """
+    Runs the core decoding pipeline, processing prompts and saving valid JSON.
+    """
     parser = argparse.ArgumentParser(description="arguments")
     parser.add_argument(
         "--functions_definition",

@@ -1,3 +1,7 @@
+"""
+Core module for enforcing JSON structure on LLM generation.
+"""
+
 import json
 import re
 from typing import List, Any, Tuple
@@ -9,7 +13,15 @@ from src.masks import MaskManager
 
 
 class JSONConstrainedDecoder:
+    """
+    A decoder that forces LLM outputs to conform to a specific JSON schema
+    using continuous token logits masking.
+    """
     def __init__(self, llm: Small_LLM_Model, funcs: List[FunctionDef]) -> None:
+        """
+        Initialize the decoder with the model, function definitions,
+        and vocabulary-based mask manager.
+        """
         self.llm = llm
         self.functions = funcs
 
@@ -20,7 +32,10 @@ class JSONConstrainedDecoder:
         self.masker = MaskManager(vocab)
 
     def decode(self, prompt: str) -> str:
-        """ENGINE: Coordinates the main decoding loop."""
+        """
+        Execute the constrained decoding loop to generate
+        a structured JSON response.
+        """
         sys_prompt = self._build_system_prompt()
         sys_prompt += f"\nPrompt: {prompt}<|im_end|>\n<|im_start|>assistant\n"
 
@@ -34,7 +49,6 @@ class JSONConstrainedDecoder:
         c_key = ""
         s_start = 0
 
-        # Optimization: Encode the whole prompt only once
         full_text = sys_prompt + gen_text
         ids_2d = self.llm.encode(full_text)
         ids_1d = ids_2d[0].tolist()
@@ -42,7 +56,6 @@ class JSONConstrainedDecoder:
         for _ in range(400):
             logits = self.llm.get_logits_from_input_ids(ids_1d)
 
-            # Brain makes decisions
             state, cible, c_func, p_left, c_key, s_start, gen_text = \
                 self._update_state(
                     gen_text, state, cible, c_func,
@@ -52,7 +65,6 @@ class JSONConstrainedDecoder:
             if state == "END_JSON" and gen_text.endswith("}}"):
                 break
 
-            # Arms restrict AI tokens
             self._apply_masks(
                 logits, state, cible, gen_text, c_key, c_func, len(p_left)
             )
@@ -61,13 +73,17 @@ class JSONConstrainedDecoder:
             best_str = self.llm.decode([best_tok])
 
             gen_text += best_str
-            ids_1d.append(best_tok)  # Speed optimization
+            ids_1d.append(best_tok)
             print(best_str, end="", flush=True)
 
         print()
         return gen_text
 
     def _build_system_prompt(self) -> str:
+        """
+        Construct the system prompt detailing available functions
+        and extraction rules.
+        """
         prompt = (
             "<|im_start|>system\n"
             "You are a precise data extraction AI. "
@@ -93,8 +109,10 @@ class JSONConstrainedDecoder:
         self, gen_txt: str, state: str, cible: List[str],
         c_func: Any, p_left: List[str], c_key: str, s_start: int
     ) -> Tuple[str, List[str], Any, List[str], str, int, str]:
-        """BRAIN: State Machine transitions logic."""
-
+        """
+        Process the current generation state and determine the next
+        required target.
+        """
         if state == "NAME_KEY" and gen_txt.endswith(tuple(cible)):
             state = "FUNC_NAME"
             cible = [f.name + '", "' for f in self.functions]
@@ -180,7 +198,10 @@ class JSONConstrainedDecoder:
     def _apply_masks(
             self, logits: List[float], state: str, cible: List[str],
             gen_txt: str, c_key: str, c_func: Any, n_left: int) -> None:
-        """ARMS: Restrict AI tokens based on state."""
+        """
+        Apply token logits masking based on the current
+        state and expected data types.
+        """
         if state == "NUM_VAL":
             if c_func and c_func.parameters[c_key].type == "number":
                 self.masker.apply_number_mask(logits, n_left)

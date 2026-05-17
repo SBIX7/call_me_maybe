@@ -1,20 +1,12 @@
 [
   {
-    "name": "fn_system_ping",
-    "description": "Ping the system to check if it is alive. Requires absolutely no parameters.",
-    "parameters": {},
-    "returns": {
-      "type": "boolean"
-    }
-  },
-  {
-    "name": "fn_calculate_trajectory",
-    "description": "Calculate trajectory given initial velocity and angle. Can handle negative values and floats.",
+    "name": "fn_add_numbers",
+    "description": "Add two numbers together and return their sum.",
     "parameters": {
-      "velocity": {
+      "a": {
         "type": "number"
       },
-      "angle": {
+      "b": {
         "type": "number"
       }
     },
@@ -23,61 +15,53 @@
     }
   },
   {
-    "name": "fn_user_profile",
-    "description": "Update user profile with age, bio, subscription status, and role.",
+    "name": "fn_greet",
+    "description": "Generate a greeting message for a person by name.",
     "parameters": {
-      "age": {
+      "name": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
+    "name": "fn_reverse_string",
+    "description": "Reverse a string and return the reversed result.",
+    "parameters": {
+      "s": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
+    "name": "fn_get_square_root",
+    "description": "Calculate the square root of a number.",
+    "parameters": {
+      "a": {
         "type": "number"
-      },
-      "bio": {
-        "type": "string"
-      },
-      "is_premium": {
-        "type": "boolean"
-      },
-      "role": {
-        "type": "string",
-        "enum": [
-          "admin",
-          "user",
-          "guest"
-        ]
       }
     },
     "returns": {
-      "type": "string"
+      "type": "number"
     }
   },
   {
-    "name": "fn_regex_extractor",
-    "description": "Extract data from a text using a regex pattern.",
+    "name": "fn_substitute_string_with_regex",
+    "description": "Replace all occurrences matching a regex pattern in a string.",
     "parameters": {
-      "text": {
+      "source_string": {
         "type": "string"
       },
-      "pattern": {
+      "regex": {
         "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  },
-  {
-    "name": "fn_smart_home_control",
-    "description": "Control a smart home device state.",
-    "parameters": {
-      "device": {
-        "type": "string",
-        "enum": [
-          "lights",
-          "thermostat",
-          "blinds",
-          "lock"
-        ]
       },
-      "state": {
-        "type": "boolean"
+      "replacement": {
+        "type": "string"
       }
     },
     "returns": {
